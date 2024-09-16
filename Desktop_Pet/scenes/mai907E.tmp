@@ -1,0 +1,28 @@
+[gd_scene load_steps=3 format=3 uid="uid://b7jsivrhfalbu"]
+
+[ext_resource type="PackedScene" uid="uid://cin86csd0xpvu" path="res://scenes/character_body_2d.tscn" id="1_8ug5l"]
+
+[sub_resource type="GDScript" id="GDScript_bywoo"]
+script/source = "extends Node2D
+
+func _ready():
+	# Connect the input event to the current node
+	self.connect(\"input_event\", self, \"_on_input_event\")
+
+func _process(delta):
+    if Input.is_action_just_pressed(\"ui_select\"):
+        var rand = RandomNumberGenerator.new()
+        rand.randomize()  # Initialize with a random seed
+
+        # Generate random coordinates for the window position
+        var x = rand.randi_range(0, OS.get_screen_size().x)
+        var y = rand.randi_range(0, OS.get_screen_size().y)
+
+        # Set the window position
+        OS.set_window_position(Vector2(x, y))"
+
+[node name="Main" type="Node2D"]
+script = SubResource("GDScript_bywoo")
+
+[node name="CharacterBody2D" parent="." instance=ExtResource("1_8ug5l")]
+position = Vector2(74, 64)

@@ -1,0 +1,84 @@
+[gd_scene load_steps=3 format=3 uid="uid://b7jsivrhfalbu"]
+
+[ext_resource type="PackedScene" uid="uid://cin86csd0xpvu" path="res://scenes/character_body_2d.tscn" id="1_8ug5l"]
+
+[sub_resource type="GDScript" id="GDScript_u5umt"]
+script/source = "extends CharacterBody2D
+
+# Speed of the character
+var speed = 200
+
+# Time interval for changing direction and stopping
+var change_interval = 2.0
+var stop_interval = 1.0
+
+# Reference to the AnimatedSprite2D node
+@onready var animated_sprite = $AnimatedSprite2D
+
+# Timer to change direction and stop randomly
+var change_direction_timer = 0.0
+var stop_timer = 0.0
+
+# Random movement direction
+var direction = Vector2.ZERO
+
+# Randomly stops the character
+var is_stopped = false
+
+func _ready():
+	# Set the default animation
+	animated_sprite.play(\"walk\")
+	set_random_direction()
+
+func _process(delta):
+	change_direction_timer -= delta
+	stop_timer -= delta
+
+	# Change direction at intervals
+	if change_direction_timer <= 0:
+		change_direction_timer = change_interval
+		set_random_direction()
+
+	# Randomly stop and resume movement
+	if stop_timer <= 0:
+		stop_timer = randf() * stop_interval
+		is_stopped = !is_stopped
+
+	# Play or stop animation based on movement
+	if is_stopped:
+		animated_sprite.stop()
+	else:
+		animated_sprite.play(\"walk\")
+		move_character(delta)
+
+func set_random_direction():
+	var directions = [Vector2(1, 0), Vector2(-1, 0), Vector2(0, 1), Vector2(0, -1)]
+	direction = directions[randi() % directions.size()]
+	animated_sprite.flip_h = direction.x < 0
+
+func move_character(delta):
+	# Normalize direction vector to ensure consistent speed in all directions
+	direction = direction.normalized()
+
+	# Move the character
+	velocity = direction * speed
+	move_and_slide()
+
+	# Ensure the character stays within window borders
+	var viewport_rect = get_viewport_rect()
+	if position.x < 0 or position.x > viewport_rect.size.x:
+		direction.x = -direction.x
+		animated_sprite.flip_h = direction.x < 0
+	if position.y < 0 or position.y > viewport_rect.size.y:
+		direction.y = -direction.y
+"
+
+[node name="Main" type="Node2D"]
+position = Vector2(-36, 0)
+
+[node name="player" parent="." instance=ExtResource("1_8ug5l")]
+position = Vector2(215, 63)
+script = SubResource("GDScript_u5umt")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(210, 101)

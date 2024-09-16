@@ -1,0 +1,55 @@
+[gd_scene load_steps=3 format=3 uid="uid://b7jsivrhfalbu"]
+
+[ext_resource type="PackedScene" uid="uid://cin86csd0xpvu" path="res://scenes/character_body_2d.tscn" id="1_8ug5l"]
+
+[sub_resource type="GDScript" id="GDScript_u5umt"]
+script/source = "extends CharacterBody2D
+
+# Speed of the character
+var speed = 200
+
+# Reference to the AnimatedSprite2D node
+var animated_sprite = $AnimatedSprite2D
+
+func _ready():
+	# Set the default animation
+	animated_sprite.play(\"walk\")
+
+func _process(delta):
+	var direction = Vector2.ZERO
+
+	# Input handling
+	if Input.is_action_pressed(\"ui_right\"):
+		direction.x += 1
+		animated_sprite.flip_h = false  # Ensure the sprite is not flipped
+	elif Input.is_action_pressed(\"ui_left\"):
+		direction.x -= 1
+		animated_sprite.flip_h = true  # Flip the sprite horizontally
+	elif Input.is_action_pressed(\"ui_down\"):
+		direction.y += 1
+	elif Input.is_action_pressed(\"ui_up\"):
+		direction.y -= 1
+
+	# Play the walk animation if moving, otherwise stop the animation
+	if direction != Vector2.ZERO:
+		animated_sprite.play(\"walk\")
+	else:
+		animated_sprite.stop()
+
+	# Normalize direction vector to ensure consistent speed in all directions
+	direction = direction.normalized()
+
+	# Move the character
+	velocity = direction * speed
+	move_and_slide()
+"
+
+[node name="Main" type="Node2D"]
+position = Vector2(-36, 0)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(210, 101)
+
+[node name="player" parent="." instance=ExtResource("1_8ug5l")]
+position = Vector2(215, 63)
+script = SubResource("GDScript_u5umt")

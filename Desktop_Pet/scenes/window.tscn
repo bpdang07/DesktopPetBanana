@@ -1,0 +1,4 @@
+[gd_scene format=3 uid="uid://ihwxvm8wbgjb"]
+
+[node name="Window" type="Window"]
+position = Vector2i(6, 38)

@@ -1,0 +1,115 @@
+[gd_scene load_steps=3 format=3 uid="uid://b7jsivrhfalbu"]
+
+[ext_resource type="PackedScene" uid="uid://cin86csd0xpvu" path="res://scenes/character_body_2d.tscn" id="1_8ug5l"]
+
+[sub_resource type="GDScript" id="GDScript_4l3vm"]
+script/source = "extends CharacterBody2D
+
+
+var speed = 200 
+var change_interval = 5.0
+var stop_interval = 5.0
+@onready var animated_sprite = $AnimatedSprite2D
+var change_direction_timer = 0.0
+var stop_timer = 0.0
+var direction = Vector2.ZERO
+
+# Randomly stops the character
+var is_stopped = false
+
+func _ready():
+	# Set the default animation
+	animated_sprite.play(\"walk\")
+	set_random_direction()
+
+func _process(delta):
+	change_direction_timer -= delta
+	stop_timer -= delta
+
+	# Change direction at intervals
+	if change_direction_timer <= 0:
+		change_direction_timer = change_interval
+		set_random_direction()
+
+	# Randomly stop and resume movement
+	if stop_timer <= 0:
+		stop_timer = randf() * stop_interval
+		is_stopped = !is_stopped
+
+	# Play or stop animation based on movement
+	if is_stopped:
+		animated_sprite.play(\"idle\")
+	else:
+		animated_sprite.play(\"walk\")
+		move_character(delta)
+
+func set_random_direction():
+	var directions = [Vector2(1, 0), Vector2(-1, 0), Vector2(0, 1), Vector2(0, -1)]
+	direction = directions[randi() % directions.size()]
+	animated_sprite.flip_h = direction.x < 0
+
+func move_character(delta):
+	# Normalize direction vector to ensure consistent speed in all directions
+	direction = direction.normalized()
+
+	# Move the character
+	velocity = direction * speed
+	move_and_slide()
+
+	var border_x = 1920
+	var border_y = 1080
+	
+	# Ensure the character stays within window borders
+	if position.x < 0 or position.x > border_x:
+		direction.x = -direction.x
+		animated_sprite.flip_h = direction.x < 0
+	if position.y < 0 or position.y > border_y:
+		direction.y = -direction.y
+	
+	get_window().position = Vector2(position.x, position.y)
+"
+
+[node name="Main" type="Node2D"]
+position = Vector2(-36, 0)
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="Control"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -4.375
+anchor_right = -4.375
+offset_left = -388.0
+offset_top = 48.0
+offset_right = 124.0
+offset_bottom = 560.0
+
+[node name="SubViewport" type="SubViewport" parent="Control/SubViewportContainer"]
+handle_input_locally = false
+size = Vector2i(200, 512)
+render_target_update_mode = 4
+
+[node name="player" parent="Control/SubViewportContainer/SubViewport" instance=ExtResource("1_8ug5l")]
+script = SubResource("GDScript_4l3vm")
+
+[node name="SubViewportContainer2" type="SubViewportContainer" parent="Control"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 250.0
+offset_top = -374.0
+offset_right = 852.0
+offset_bottom = 156.0
+grow_vertical = 2
+
+[node name="SubViewport" type="SubViewport" parent="Control/SubViewportContainer2"]
+handle_input_locally = false
+render_target_update_mode = 4
+
+[node name="player" parent="Control/SubViewportContainer2/SubViewport" instance=ExtResource("1_8ug5l")]
+script = SubResource("GDScript_4l3vm")
